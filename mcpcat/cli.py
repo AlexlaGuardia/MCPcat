@@ -17,11 +17,14 @@ app = typer.Typer(
 )
 console = Console()
 
+URL_HELP = "MCP server URL (e.g. http://localhost:8100/mcp or http://localhost:8100/sse)"
+
 
 @app.command()
 def tools(
-    url: str = typer.Argument(help="MCP server SSE URL (e.g. http://localhost:8100/sse)"),
+    url: str = typer.Argument(help=URL_HELP),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show full parameter schemas"),
+    filter: str = typer.Option(None, "--filter", "-f", help="Filter tools by name substring"),
 ):
     """List all tools exposed by an MCP server."""
     with console.status("Connecting to MCP server..."):
@@ -31,6 +34,12 @@ def tools(
     if not tool_list:
         console.print("[yellow]No tools found.[/yellow]")
         raise typer.Exit()
+
+    if filter:
+        tool_list = [t for t in tool_list if filter.lower() in t.get("name", "").lower()]
+        if not tool_list:
+            console.print(f"[yellow]No tools matching '{filter}'.[/yellow]")
+            raise typer.Exit()
 
     table = Table(title=f"Tools — {url}", show_lines=verbose)
     table.add_column("#", style="dim", width=4)
@@ -42,7 +51,6 @@ def tools(
     for i, tool in enumerate(tool_list, 1):
         name = tool.get("name", "?")
         desc = tool.get("description", "")
-        # Truncate description if not verbose
         if not verbose and len(desc) > 60:
             desc = desc[:57] + "..."
 
@@ -61,7 +69,7 @@ def tools(
 
 @app.command()
 def inspect(
-    url: str = typer.Argument(help="MCP server SSE URL"),
+    url: str = typer.Argument(help=URL_HELP),
     tool_name: str = typer.Argument(help="Tool name to inspect"),
 ):
     """Show full schema for a specific tool."""
@@ -83,7 +91,7 @@ def inspect(
 
 @app.command()
 def call(
-    url: str = typer.Argument(help="MCP server SSE URL"),
+    url: str = typer.Argument(help=URL_HELP),
     tool_name: str = typer.Argument(help="Tool name to call"),
     args: str = typer.Option("{}", "--args", "-a", help='JSON arguments (e.g. \'{"query": "SELECT 1"}\')'),
 ):
@@ -102,32 +110,38 @@ def call(
         console.print("[red]No response from server.[/red]")
         raise typer.Exit(1)
 
-    # Handle different result formats
-    if isinstance(result, dict):
-        if "content" in result:
-            for item in result["content"]:
-                if item.get("type") == "text":
-                    try:
-                        parsed = json.loads(item["text"])
-                        console.print(JSON(json.dumps(parsed)))
-                    except (json.JSONDecodeError, TypeError):
-                        console.print(item["text"])
-        else:
-            console.print(JSON(json.dumps(result)))
+    # Handle MCP content array format
+    if isinstance(result, dict) and "content" in result:
+        for item in result["content"]:
+            if item.get("type") == "text":
+                try:
+                    parsed = json.loads(item["text"])
+                    console.print(JSON(json.dumps(parsed)))
+                except (json.JSONDecodeError, TypeError):
+                    console.print(item["text"])
+    elif isinstance(result, dict):
+        console.print(JSON(json.dumps(result)))
     else:
         console.print(str(result))
 
 
 @app.command()
 def ping(
-    url: str = typer.Argument(help="MCP server SSE URL"),
+    url: str = typer.Argument(help=URL_HELP),
 ):
     """Check if an MCP server is reachable and responding."""
     try:
         with console.status("Pinging..."):
             client = MCPClient(url)
+            info = client.server_info()
             tool_list = client.list_tools()
-        console.print(f"[green]Connected.[/green] {len(tool_list)} tools available.")
+
+        if info:
+            name = info.get("name", "unknown")
+            version = info.get("version", "?")
+            protocol = info.get("protocol", "?")
+            console.print(f"[green]Connected.[/green] {name} v{version} ({protocol})")
+        console.print(f"[dim]{len(tool_list)} tools available. Transport: {client._transport}[/dim]")
     except Exception as e:
         console.print(f"[red]Failed:[/red] {e}")
         raise typer.Exit(1)
