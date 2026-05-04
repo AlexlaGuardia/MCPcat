@@ -1,29 +1,21 @@
-# mcpcat
+# mcprobe
 
-Inspect any MCP server from your terminal. List tools, read schemas, call endpoints.
+You're building an MCP server. You want to see what tools it exposes, test a call, debug a schema. You don't want to wire up a full client just to do that.
 
-I built this because I run a [70+ tool MCP server](https://github.com/AlexlaGuardia/guardia-mcp) and got tired of guessing what was exposed. `mcpcat` connects via SSE, pulls the tool list, and lets you poke around without writing a client.
+`mcprobe` is the missing `curl` for MCP. Connect to any server, list its tools, call them, inspect schemas. From your terminal.
 
 ## Install
 
 ```bash
-pip install mcpcat
-```
-
-Or from source:
-
-```bash
-git clone https://github.com/AlexlaGuardia/mcpcat.git
-cd mcpcat
-pip install -e .
+pip install mcprobe
 ```
 
 ## Usage
 
-**List all tools on a server:**
+**List the tools on a server:**
 
 ```bash
-mcpcat tools http://localhost:8100/sse
+mcprobe tools http://localhost:8100/sse
 ```
 
 ```
@@ -38,23 +30,23 @@ mcpcat tools http://localhost:8100/sse
 70 tools available
 ```
 
-**Inspect a specific tool's schema:**
+**Inspect a tool's schema:**
 
 ```bash
-mcpcat inspect http://localhost:8100/sse cortex_signal
+mcprobe inspect http://localhost:8100/sse cortex_signal
 ```
 
 **Call a tool:**
 
 ```bash
-mcpcat call http://localhost:8100/sse health
-mcpcat call http://localhost:8100/sse query -a '{"sql": "SELECT count(*) FROM clients"}'
+mcprobe call http://localhost:8100/sse health
+mcprobe call http://localhost:8100/sse query -a '{"sql": "SELECT count(*) FROM clients"}'
 ```
 
-**Check if a server is alive:**
+**Check a server is alive:**
 
 ```bash
-mcpcat ping http://localhost:8100/sse
+mcprobe ping http://localhost:8100/sse
 ```
 
 ## Commands
@@ -64,11 +56,15 @@ mcpcat ping http://localhost:8100/sse
 | `tools`   | List all tools (add `-v` for schemas) |
 | `inspect` | Full schema for one tool              |
 | `call`    | Call a tool with JSON args            |
-| `ping`    | Check if server responds              |
+| `ping`    | Check the server responds             |
+
+## Transports
+
+`mcprobe` auto-detects SSE (`/sse`) and streamable HTTP (`/mcp`) endpoints. No flags needed.
 
 ## Why
 
-MCP servers are popping up everywhere but there's no quick way to see what's inside one. You either read the source or wire up a client. `mcpcat` is the missing `curl` for MCP.
+MCP servers are everywhere now. There was no quick way to look inside one without reading source or writing a client. This is that quick way.
 
 ## License
 

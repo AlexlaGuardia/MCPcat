@@ -3,23 +3,27 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "mcpcat"
+name = "mcprobe"
 version = "0.1.0"
-description = "MCP Server Inspector CLI — connect, explore, and test any MCP server from your terminal"
+description = "Probe any MCP server from your terminal. List tools, inspect schemas, call endpoints."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"
 authors = [
     { name = "Alex LaGuardia", email = "alex@guardiacontent.com" },
 ]
-keywords = ["mcp", "model-context-protocol", "cli", "inspector", "debugging"]
+keywords = ["mcp", "model-context-protocol", "cli", "inspector", "debugging", "probe"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Debuggers",
 ]
 dependencies = [
     "typer>=0.9.0",
@@ -29,9 +33,9 @@ dependencies = [
 ]
 
 [project.scripts]
-mcpcat = "mcpcat.cli:app"
+mcprobe = "mcprobe.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/AlexlaGuardia/mcpcat"
-Repository = "https://github.com/AlexlaGuardia/mcpcat"
-Issues = "https://github.com/AlexlaGuardia/mcpcat/issues"
+Homepage = "https://github.com/AlexlaGuardia/mcprobe"
+Repository = "https://github.com/AlexlaGuardia/mcprobe"
+Issues = "https://github.com/AlexlaGuardia/mcprobe/issues"

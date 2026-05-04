@@ -1,4 +1,4 @@
-"""mcpcat CLI — MCP Server Inspector"""
+"""mcprobe CLI."""
 
 import typer
 from rich.console import Console
@@ -8,11 +8,11 @@ from rich.json import JSON
 from rich.syntax import Syntax
 import json
 
-from mcpcat.client import MCPClient
+from mcprobe.client import MCPClient
 
 app = typer.Typer(
-    name="mcpcat",
-    help="MCP Server Inspector — connect, explore, and test any MCP server from your terminal.",
+    name="mcprobe",
+    help="Probe any MCP server from your terminal. List tools, inspect schemas, call endpoints.",
     no_args_is_help=True,
 )
 console = Console()
@@ -41,7 +41,7 @@ def tools(
             console.print(f"[yellow]No tools matching '{filter}'.[/yellow]")
             raise typer.Exit()
 
-    table = Table(title=f"Tools — {url}", show_lines=verbose)
+    table = Table(title=f"Tools at {url}", show_lines=verbose)
     table.add_column("#", style="dim", width=4)
     table.add_column("Tool", style="bold cyan")
     table.add_column("Description", style="white", max_width=60)
